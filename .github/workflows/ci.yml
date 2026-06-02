@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Cache .lake
+        uses: actions/cache@v4
+        with:
+          path: lean/.lake
+          key: lake-${{ runner.os }}-${{ hashFiles('lean/lean-toolchain', 'lean/lakefile.lean', 'lean/lake-manifest.json') }}
+          restore-keys: lake-${{ runner.os }}-
+
+      - name: Build Lean project
+        working-directory: ./lean
+        run: lake build
+
+      - name: Reject `sorry` in user proofs
+        working-directory: ./lean
+        run: |
+          if grep -rn 'sorry' SmallocArithVerif --include='*.lean' >/dev/null; then
+            echo "Found 'sorry' in user-authored proof files; failing CI."
+            grep -rn 'sorry' SmallocArithVerif --include='*.lean'
+            exit 1
+          fi

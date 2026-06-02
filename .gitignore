@@ -1,0 +1,18 @@
+# Rust build artefacts
+smalloc-arith/target/
+smalloc-arith/Cargo.lock
+
+# Lake build artefacts
+lean/.lake/
+lean/build/
+
+# Generated intermediate files (committed copies live alongside Lean sources)
+# Note: .llbc and the Aeneas-generated Types.lean / Funs.lean ARE committed,
+# so they are NOT listed here.
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
